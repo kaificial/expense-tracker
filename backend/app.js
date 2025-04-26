@@ -1,29 +1,25 @@
-const express = require('express')
+const express = require('express');
 const cors = require('cors');
-const {db} = require('./db/db.js');  // Adjust the path accordingly
-const {readdirSync} = require('fs')
-const app = express()
+const mongoose = require('mongoose');
+const expenseRoutes = require('./routes/expenseRoutes');
 
-require('dotenv').config()
+const app = express();
+require('dotenv').config();
 
+// Middleware
+app.use(express.json());
+app.use(cors());
 
+// Routes
+app.use('/api/expenses', expenseRoutes);
 
-const PORT = process.env.PORT
+// Database connection
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/expense-tracker')
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
-// middlewares
-
-app.use(express.json())
-app.use(cors())
-
-// routes
-readdirSync('./routes').map((route) => app.use('/api/v1', require('./routes/' + route)))
-
-
-const server = () => {
-    db()
-    app.listen(PORT, () => {
-        console.log('Listening to port: ', PORT)
-    })
-}
-
-server()
+// Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
